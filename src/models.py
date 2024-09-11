@@ -9,11 +9,31 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<Usuario %r>' % self.email
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
+            'esta_activo': self.is_active,
+            'calificacion': 5
+            # do not serialize the password, its a security breach
+        }
+
+class Empresa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(250), nullable=False)
+    ciudad = db.Column(db.String(250), nullable=False)
+    slogan = db.Column(db.String(250), nullable=False)
+    ceo = db.Column(db.String(250), nullable=False)
+
+    def __repr__(self):
+        return '<Company %r>' % self.nombre
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "himno": self.slogan,
             # do not serialize the password, its a security breach
         }
