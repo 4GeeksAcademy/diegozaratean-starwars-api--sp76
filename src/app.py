@@ -64,6 +64,32 @@ def get_company(company_id):
 
     return jsonify(company.serialize()), 200
 
+@app.route('/company', methods=['POST'])
+def create_company():
+    # DONE validacion modelo
+    # DONE leer las variables del body
+
+    print(request)
+    print(request.get_json())
+    body = request.get_json()
+
+    if 'ciudad' not in body:
+        return jsonify('debes enviarme la ciduad'), 400
+    if body['ciudad'] == '':
+        return jsonify('La ciudad no puede ser vacia'), 400
+
+
+    print(request.get_json()['ciudad'])
+    # crear la compañia en la DB
+    company = Empresa(**body)
+    db.session.add(company)
+    db.session.commit()
+
+    response_body = {
+        "msg": "cree una nueva empresa"
+    }
+
+    return jsonify(response_body), 200
 
 ## FIN CODIGO
 
