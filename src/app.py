@@ -11,6 +11,11 @@ from admin import setup_admin
 from models import db, User, Empresa
 #from models import Person
 
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
@@ -25,6 +30,15 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret deberian colcoar cualquier cosa"  # Change this!
+# palabraa.  diegoa.   casaa
+# palabraaaron
+# palabra ===> asfasdfasdfasdfasdfkqewrkewjrjwehrkejwhrkj
+# palabra ===> papalapabrapa
+
+jwt = JWTManager(app)
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -52,6 +66,7 @@ def handle_hello():
     return jsonify(results), 200
 
 @app.route('/company', methods=['GET'])
+@jwt_required()
 def get_companies():
     all_companies = Empresa.query.all()
     results = list(map(lambda company: company.serialize() ,all_companies)) 
@@ -90,6 +105,32 @@ def create_company():
     }
 
     return jsonify(response_body), 200
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return jsonify({"msg": "user not found"}), 401
+    print(user)
+    print(user.password)
+    if user.password != password:
+        return jsonify({"msg": "wrong passwaord"}), 401
+
+
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token)
+
+
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
+
 
 ## FIN CODIGO
 
